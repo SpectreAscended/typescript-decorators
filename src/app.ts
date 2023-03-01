@@ -1,4 +1,4 @@
-// A decorator is a function that you apply to something, such as a class, in a certain way. That doesn't clarify anything though.
+// A decorator is a function that you apply to something, such as a class, in a certain way. That doesn't clarify anything though. --See line 79.
 
 // It is convention to start with a capital character.  Not a requirement, but just a convention.
 
@@ -58,27 +58,54 @@ function WithTemplate(template: string, hookId: string) {
 // They execute from the bottom up.  In this example @WithTemplate will execute first, and then @Logger will execute second.  However, the factories will run in the order in which they are defined in the script.
 
 // @Logger('LOGGING - PERSON')
-@Logger('LOGGING')
-@WithTemplate('<h1>My Person Object</h1>', 'app')
-class Person {
-  name = 'Cory';
+// @Logger('LOGGING')
+// @WithTemplate('<h1>My Person Object</h1>', 'app')
+// class Person {
+//   name = 'Cory';
 
-  constructor() {
-    console.log('Creating person object...');
-  }
-}
+//   constructor() {
+//     console.log('Creating person object...');
+//   }
+// }
 
-const pers = new Person();
+// const pers = new Person();
 
-console.log(pers);
+// console.log(pers);
 
 // If you add a decorator to a property the decorate recieves 2 arguments. The first element is the target of the property.  The second argument is the propertyName.
 
 // If we console log the two arguments we will see that target is the prototype of our class and the propertyName will be the ... properties name. --> 'title'
 
+//  Decorators do not run at run time. Decorators allow you to do additional behind-the-scenes set up work when a class is defined.  (meta programming).  The decorator can be used to set up code that can run whenever the class is called.  To store some meta data, or store some data about a property somewhere else in the project or library.
+
 function Log(target: any, propertyName: string | Symbol) {
   console.log('Property decorator');
   console.log(target, propertyName);
+}
+
+function Log2(target: any, name: string, descriptor: PropertyDescriptor) {
+  console.log('Accessor decorator!');
+  console.log(target);
+  console.log(name);
+  console.log(descriptor);
+}
+
+function Log3(
+  target: any,
+  name: string | Symbol,
+  descriptor: PropertyDescriptor
+) {
+  console.log('Method decorator!');
+  console.log(target);
+  console.log(name);
+  console.log(descriptor);
+}
+
+function Log4(target: any, name: string | Symbol, position: number) {
+  console.log('Parameter decorator!');
+  console.log(target);
+  console.log(name);
+  console.log(position);
 }
 
 class Product {
@@ -86,6 +113,7 @@ class Product {
   title: string;
   private _price: number;
 
+  @Log2
   set price(val: number) {
     if (val > 0) {
       this._price = val;
@@ -99,7 +127,11 @@ class Product {
     this._price = p;
   }
 
-  getPriceWithTax(tax: number) {
+  @Log3
+  getPriceWithTax(@Log4 tax: number) {
     return this._price * (1 + tax);
   }
 }
+
+const p1 = new Product('Book', 19);
+const p2 = new Product('Book 2', 29);
