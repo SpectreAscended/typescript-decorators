@@ -41,14 +41,21 @@ function Logger(logString: string) {
 function WithTemplate(template: string, hookId: string) {
   console.log('TEMPLATE FACTORY');
 
-  return function (constructor: any) {
-    console.log('Rendering template');
-    const hookEl = document.getElementById(hookId);
-    const p = new constructor();
-    if (hookEl) {
-      hookEl.innerHTML = template;
-      hookEl.querySelector('h1')!.textContent = p.name;
-    }
+  return function <T extends { new (...args: any[]): { name: string } }>(
+    originalConstructor: T
+  ) {
+    return class extends originalConstructor {
+      constructor(..._: any[]) {
+        super();
+        console.log('Rendering template');
+        const hookEl = document.getElementById(hookId);
+        // const p = new originalConstructor();
+        if (hookEl) {
+          hookEl.innerHTML = template;
+          hookEl.querySelector('h1')!.textContent = this.name;
+        }
+      }
+    };
   };
 }
 
@@ -58,19 +65,19 @@ function WithTemplate(template: string, hookId: string) {
 // They execute from the bottom up.  In this example @WithTemplate will execute first, and then @Logger will execute second.  However, the factories will run in the order in which they are defined in the script.
 
 // @Logger('LOGGING - PERSON')
-// @Logger('LOGGING')
-// @WithTemplate('<h1>My Person Object</h1>', 'app')
-// class Person {
-//   name = 'Cory';
+@Logger('LOGGING')
+@WithTemplate('<h1>My Person Object</h1>', 'app')
+class Person {
+  name = 'Cory';
 
-//   constructor() {
-//     console.log('Creating person object...');
-//   }
-// }
+  constructor() {
+    console.log('Creating person object...');
+  }
+}
 
-// const pers = new Person();
+const pers = new Person();
 
-// console.log(pers);
+console.log(pers);
 
 // If you add a decorator to a property the decorate recieves 2 arguments. The first element is the target of the property.  The second argument is the propertyName.
 
@@ -135,3 +142,6 @@ class Product {
 
 const p1 = new Product('Book', 19);
 const p2 = new Product('Book 2', 29);
+
+// Returning (and changing) a class in a class decorator.
+// -- See WithTemplate above.  We changed this decorator to return a new class, while keeping the original class.  This will run when the class is instantiated.  View lecture 112 for instruction on what is going on here.
